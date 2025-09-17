@@ -22,54 +22,54 @@ interface ReportCardProps {
 const ReportCard: React.FC<ReportCardProps> = ({ report, showCitizenInfo = false }) => {
   const getStatusColor = (status: Report['status']) => {
     switch (status) {
-      case 'pendiente': return 'secondary';
-      case 'en_proceso': return 'outline';
-      case 'resuelto': return 'default';
+      case 'PENDIENTE': return 'secondary';
+      case 'EN_PROCESO': return 'outline';
+      case 'RESUELTO': return 'default';
       default: return 'outline';
     }
   };
 
   const getStatusIcon = (status: Report['status']) => {
     switch (status) {
-      case 'pendiente': return <Clock className="h-4 w-4" />;
-      case 'en_proceso': return <AlertCircle className="h-4 w-4" />;
-      case 'resuelto': return <CheckCircle className="h-4 w-4" />;
+      case 'PENDIENTE': return <Clock className="h-4 w-4" />;
+      case 'EN_PROCESO': return <AlertCircle className="h-4 w-4" />;
+      case 'RESUELTO': return <CheckCircle className="h-4 w-4" />;
       default: return <Clock className="h-4 w-4" />;
     }
   };
 
   const getTypeIcon = (type: Report['type']) => {
     switch (type) {
-      case 'residuos_solidos': return <Trash2 className="h-5 w-5 text-destructive" />;
-      case 'maleza': return <Leaf className="h-5 w-5 text-success" />;
-      case 'barrido': return <Hammer className="h-5 w-5 text-secondary" />;
+      case 'RESIDUOS_SOLIDOS': return <Trash2 className="h-5 w-5 text-destructive" />;
+      case 'MALEZA': return <Leaf className="h-5 w-5 text-success" />;
+      case 'BARRIDO': return <Hammer className="h-5 w-5 text-secondary" />;
       default: return <AlertCircle className="h-5 w-5" />;
     }
   };
 
   const getTypeLabel = (type: Report['type']) => {
     switch (type) {
-      case 'residuos_solidos': return 'Residuos Sólidos';
-      case 'maleza': return 'Maleza';
-      case 'barrido': return 'Barrido';
+      case 'RESIDUOS_SOLIDOS': return 'Residuos Sólidos';
+      case 'MALEZA': return 'Maleza';
+      case 'BARRIDO': return 'Barrido';
       default: return type;
     }
   };
 
   const getStatusLabel = (status: Report['status']) => {
     switch (status) {
-      case 'pendiente': return 'Pendiente';
-      case 'en_proceso': return 'En Proceso';
-      case 'resuelto': return 'Resuelto';
+      case 'PENDIENTE': return 'Pendiente';
+      case 'EN_PROCESO': return 'En Proceso';
+      case 'RESUELTO': return 'Resuelto';
       default: return status;
     }
   };
 
   const getPriorityColor = (priority: Report['priority']) => {
     switch (priority) {
-      case 'alta': return 'destructive';
-      case 'media': return 'secondary';
-      case 'baja': return 'outline';
+      case 'ALTA': return 'destructive';
+      case 'MEDIA': return 'secondary';
+      case 'BAJA': return 'outline';
       default: return 'outline';
     }
   };

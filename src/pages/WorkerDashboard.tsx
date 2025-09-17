@@ -14,7 +14,7 @@ import {
   LogOut,
   Upload
 } from 'lucide-react';
-import { mockTasks } from '@/data/mockData';
+import { taskService } from '@/services/taskService';
 import { Task } from '@/types';
 import TaskCard from '@/components/TaskCard';
 import CompleteTaskDialog from '@/components/CompleteTaskDialog';
@@ -25,8 +25,24 @@ const WorkerDashboard = () => {
   const { toast } = useToast();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   
-  // Filtrar tareas del trabajador actual
-  const workerTasks = mockTasks.filter(task => task.workerId === user?.id);
+  // Estado para tareas del trabajador actual
+  const [workerTasks, setWorkerTasks] = useState<Task[]>([]);
+
+  React.useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const allTasks = await taskService.getTasks();
+        setWorkerTasks(allTasks.filter((task: Task) => task.workerId === user?.id));
+      } catch (error) {
+        toast({
+          title: 'Error al cargar tareas',
+          description: 'No se pudieron obtener las tareas del servidor.',
+          variant: 'destructive',
+        });
+      }
+    };
+    if (user?.id) fetchTasks();
+  }, [user?.id]);
   
   const statusCounts = {
     pendiente: workerTasks.filter(t => t.status === 'pendiente').length,

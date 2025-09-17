@@ -15,7 +15,8 @@ import {
   LogOut,
   Filter
 } from 'lucide-react';
-import { mockReports, mockTasks } from '@/data/mockData';
+import { reportService } from '@/services/reportService';
+import { taskService } from '@/services/taskService';
 import { Report, Task } from '@/types';
 import ReportCard from '@/components/ReportCard';
 import AssignTaskDialog from '@/components/AssignTaskDialog';
@@ -27,9 +28,27 @@ const SupervisorDashboard = () => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [filterPriority, setFilterPriority] = useState<string>('todas');
   
-  // Filtrar reportes de la zona del supervisor
-  const zoneReports = mockReports.filter(report => report.zone === user?.zone);
-  const zoneTasks = mockTasks.filter(task => task.supervisorId === user?.id);
+  // Estado para reportes y tareas
+  const [zoneReports, setZoneReports] = useState<Report[]>([]);
+  const [zoneTasks, setZoneTasks] = useState<Task[]>([]);
+
+  React.useEffect(() => {
+    const fetchReportsAndTasks = async () => {
+      try {
+        const allReports = await reportService.getReports();
+        setZoneReports(allReports.filter((report: Report) => report.zone === user?.zone));
+        const allTasks = await taskService.getTasks();
+        setZoneTasks(allTasks.filter((task: Task) => task.supervisorId === user?.id));
+      } catch (error) {
+        toast({
+          title: 'Error al cargar datos',
+          description: 'No se pudieron obtener los reportes o tareas del servidor.',
+          variant: 'destructive',
+        });
+      }
+    };
+    if (user?.zone && user?.id) fetchReportsAndTasks();
+  }, [user?.zone, user?.id]);
   
   const filteredReports = zoneReports.filter(report => {
     if (filterPriority === 'todas') return true;
@@ -37,15 +56,15 @@ const SupervisorDashboard = () => {
   });
 
   const statusCounts = {
-    pendiente: zoneReports.filter(r => r.status === 'pendiente').length,
-    en_proceso: zoneReports.filter(r => r.status === 'en_proceso').length,
-    resuelto: zoneReports.filter(r => r.status === 'resuelto').length
+    pendiente: zoneReports.filter(r => r.status === 'PENDIENTE').length,
+    en_proceso: zoneReports.filter(r => r.status === 'EN_PROCESO').length,
+    resuelto: zoneReports.filter(r => r.status === 'RESUELTO').length
   };
 
   const priorityCounts = {
-    alta: zoneReports.filter(r => r.priority === 'alta').length,
-    media: zoneReports.filter(r => r.priority === 'media').length,
-    baja: zoneReports.filter(r => r.priority === 'baja').length
+    alta: zoneReports.filter(r => r.priority === 'ALTA').length,
+    media: zoneReports.filter(r => r.priority === 'MEDIA').length,
+    baja: zoneReports.filter(r => r.priority === 'BAJA').length
   };
 
   const handleAssignTask = (report: Report) => {
@@ -173,7 +192,7 @@ const SupervisorDashboard = () => {
                 {filteredReports.map((report) => (
                   <div key={report.id} className="relative">
                     <ReportCard report={report} showCitizenInfo />
-                    {report.status === 'pendiente' && (
+                    {report.status === 'PENDIENTE' && (
                       <div className="absolute top-4 right-4">
                         <Button
                           size="sm"

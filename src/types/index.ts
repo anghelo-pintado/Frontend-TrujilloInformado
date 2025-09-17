@@ -8,28 +8,24 @@ export interface User {
 }
 
 export interface Report {
-  id: string;
-  citizenId: string;
-  citizenName: string;
-  citizenEmail: string;
-  citizenPhone?: string;
-  type: 'barrido' | 'residuos_solidos' | 'maleza';
-  description: string;
-  location: {
-    lat: number;
-    lng: number;
-    address: string;
-  };
-  photos: string[];
-  status: 'pendiente' | 'en_proceso' | 'resuelto';
-  priority: 'baja' | 'media' | 'alta';
-  zone: string;
-  createdAt: string;
-  updatedAt: string;
-  assignedTo?: string; // ID del trabajador
-  assignedBy?: string; // ID del supervisor
-  assignedAt?: string;
-  completedAt?: string;
+  id: string; 
+  citizenId: string; 
+  citizenName: string; 
+  citizenEmail: string; 
+  citizenPhone?: string; 
+  type: 'BARRIDO' | 'RESIDUOS_SOLIDOS' | 'MALEZA'; 
+  description: string; 
+  location: { lat: number; lng: number; address: string; }; 
+  photos: string[]; 
+  status: 'PENDIENTE' | 'EN_PROCESO' | 'RESUELTO'; 
+  priority: 'BAJA' | 'MEDIA' | 'ALTA'; 
+  zone: string; 
+  createdAt: string; 
+  updatedAt: string; 
+  assignedTo?: string; // ID del trabajador 
+  assignedBy?: string; // ID del supervisor 
+  assignedAt?: string; 
+  completedAt?: string; 
   evidence?: string[]; // Fotos de evidencia del trabajador
 }
 
