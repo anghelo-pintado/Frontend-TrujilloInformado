@@ -23,7 +23,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, showCitizenInfo = false
   const getStatusColor = (status: Report['status']) => {
     switch (status) {
       case 'PENDIENTE': return 'secondary';
-      case 'EN_PROCESO': return 'outline';
+      case 'EN_PROGRESO': return 'outline';
       case 'RESUELTO': return 'default';
       default: return 'outline';
     }
@@ -32,7 +32,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, showCitizenInfo = false
   const getStatusIcon = (status: Report['status']) => {
     switch (status) {
       case 'PENDIENTE': return <Clock className="h-4 w-4" />;
-      case 'EN_PROCESO': return <AlertCircle className="h-4 w-4" />;
+      case 'EN_PROGRESO': return <AlertCircle className="h-4 w-4" />;
       case 'RESUELTO': return <CheckCircle className="h-4 w-4" />;
       default: return <Clock className="h-4 w-4" />;
     }
@@ -59,7 +59,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, showCitizenInfo = false
   const getStatusLabel = (status: Report['status']) => {
     switch (status) {
       case 'PENDIENTE': return 'Pendiente';
-      case 'EN_PROCESO': return 'En Proceso';
+      case 'EN_PROGRESO': return 'En Progreso';
       case 'RESUELTO': return 'Resuelto';
       default: return status;
     }

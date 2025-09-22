@@ -17,6 +17,7 @@ export const taskService = {
   },
 
   createTask: async (taskData: Partial<Task>) => {
+    console.log('Create task request:', taskData);
     const response = await apiClient.post('/tarea', taskData);
     if (response.data && response.data.tarea) {
       return response.data.tarea;
@@ -41,4 +42,14 @@ export const taskService = {
   deleteTask: async (id: string) => {
     await apiClient.delete(`/tarea/${id}`);
   },
+
+  uploadImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post('/tarea/cargar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    console.log('Upload image response:', response.data);
+    return response.data;
+  }
 };

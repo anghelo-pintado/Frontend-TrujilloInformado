@@ -122,7 +122,6 @@ const CreateReportDialog: React.FC<CreateReportDialogProps> = ({
 
     try {
       const result = await reportService.uploadImage(file);
-      // Ajusta según la respuesta de tu backend
       const photoUrl = result.url || result.secure_url || result;
       setFormData(prev => ({
         ...prev,
@@ -183,11 +182,12 @@ const CreateReportDialog: React.FC<CreateReportDialogProps> = ({
         location: formData.location,
         photos: formData.photos,
         priority: getPriorityByType(formData.type) as 'ALTA' | 'MEDIA' | 'BAJA',
-        zone: 'Centro', // Esto deberías determinarlo basado en la ubicación
+        zone: 'Zona Centro', // Esto deberías determinarlo basado en la ubicación
         status: 'PENDIENTE' as const,
         citizenId: user?.id,
         citizenName: user?.name,
-        citizenPhone: user?.phone
+        citizenPhone: user?.phone,
+        citizenEmail: user?.email
       };
 
       await reportService.createReport(reportData);

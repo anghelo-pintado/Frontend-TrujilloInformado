@@ -17,7 +17,7 @@ export interface Report {
   description: string; 
   location: { lat: number; lng: number; address: string; }; 
   photos: string[]; 
-  status: 'PENDIENTE' | 'EN_PROCESO' | 'RESUELTO'; 
+  status: 'PENDIENTE' | 'EN_PROGRESO' | 'RESUELTO'; 
   priority: 'BAJA' | 'MEDIA' | 'ALTA'; 
   zone: string; 
   createdAt: string; 
@@ -38,14 +38,14 @@ export interface Task {
   supervisorName: string;
   title: string;
   description: string;
-  type: 'barrido' | 'residuos_solidos' | 'maleza';
+  type: 'BARRIDO' | 'RESIDUOS_SOLIDOS' | 'MALEZA'; 
   location: {
     lat: number;
     lng: number;
     address: string;
   };
-  status: 'pendiente' | 'en_proceso' | 'completada';
-  priority: 'baja' | 'media' | 'alta';
+  status: 'PENDIENTE' | 'EN_PROGRESO' | 'RESUELTO'; 
+  priority: 'BAJA' | 'MEDIA' | 'ALTA';
   assignedAt: string;
   startedAt?: string;
   completedAt?: string;

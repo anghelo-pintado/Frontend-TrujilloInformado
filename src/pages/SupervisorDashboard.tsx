@@ -26,38 +26,39 @@ const SupervisorDashboard = () => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [filterPriority, setFilterPriority] = useState<string>('todas');
+  const [filterPriority, setFilterPriority] = useState<string>('TODAS');
   
   // Estado para reportes y tareas
   const [zoneReports, setZoneReports] = useState<Report[]>([]);
   const [zoneTasks, setZoneTasks] = useState<Task[]>([]);
 
+  const fetchReportsAndTasks = async () => {
+    try {
+      const allReports = await reportService.getReports();
+      setZoneReports(allReports.filter((report: Report) => report.zone === user?.zone));
+      const allTasks = await taskService.getTasks();
+      setZoneTasks(allTasks.filter((task: Task) => task.supervisorId === user?.id));
+    } catch (error) {
+      toast({
+        title: 'Error al cargar datos',
+        description: 'No se pudieron obtener los reportes o tareas del servidor.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   React.useEffect(() => {
-    const fetchReportsAndTasks = async () => {
-      try {
-        const allReports = await reportService.getReports();
-        setZoneReports(allReports.filter((report: Report) => report.zone === user?.zone));
-        const allTasks = await taskService.getTasks();
-        setZoneTasks(allTasks.filter((task: Task) => task.supervisorId === user?.id));
-      } catch (error) {
-        toast({
-          title: 'Error al cargar datos',
-          description: 'No se pudieron obtener los reportes o tareas del servidor.',
-          variant: 'destructive',
-        });
-      }
-    };
     if (user?.zone && user?.id) fetchReportsAndTasks();
   }, [user?.zone, user?.id]);
   
   const filteredReports = zoneReports.filter(report => {
-    if (filterPriority === 'todas') return true;
+    if (filterPriority === 'TODAS') return true;
     return report.priority === filterPriority;
   });
 
   const statusCounts = {
     pendiente: zoneReports.filter(r => r.status === 'PENDIENTE').length,
-    en_proceso: zoneReports.filter(r => r.status === 'EN_PROCESO').length,
+    en_proceso: zoneReports.filter(r => r.status === 'EN_PROGRESO').length,
     resuelto: zoneReports.filter(r => r.status === 'RESUELTO').length
   };
 
@@ -77,6 +78,7 @@ const SupervisorDashboard = () => {
       description: "La tarea ha sido asignada exitosamente al trabajador.",
     });
     setSelectedReport(null);
+    fetchReportsAndTasks();
   };
 
   return (
@@ -159,10 +161,10 @@ const SupervisorDashboard = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todas">Todas las prioridades</SelectItem>
-                  <SelectItem value="alta">Alta prioridad</SelectItem>
-                  <SelectItem value="media">Media prioridad</SelectItem>
-                  <SelectItem value="baja">Baja prioridad</SelectItem>
+                  <SelectItem value="TODAS">Todas las prioridades</SelectItem>
+                  <SelectItem value="ALTA">Alta prioridad</SelectItem>
+                  <SelectItem value="MEDIA">Media prioridad</SelectItem>
+                  <SelectItem value="BAJA">Baja prioridad</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -233,12 +235,12 @@ const SupervisorDashboard = () => {
                         </div>
                         <Badge 
                           variant={
-                            task.status === 'completada' ? 'default' :
-                            task.status === 'en_proceso' ? 'secondary' : 'outline'
+                            task.status === 'RESUELTO' ? 'default' :
+                            task.status === 'EN_PROGRESO' ? 'secondary' : 'outline'
                           }
                         >
-                          {task.status === 'completada' ? 'Completada' :
-                           task.status === 'en_proceso' ? 'En Proceso' : 'Pendiente'}
+                          {task.status === 'RESUELTO' ? 'Resuelto' :
+                           task.status === 'EN_PROGRESO' ? 'En Progreso' : 'Pendiente'}
                         </Badge>
                       </div>
                       
@@ -259,8 +261,8 @@ const SupervisorDashboard = () => {
                           <span className="text-muted-foreground">Prioridad:</span>
                           <Badge 
                             variant={
-                              task.priority === 'alta' ? 'destructive' :
-                              task.priority === 'media' ? 'secondary' : 'outline'
+                              task.priority === 'ALTA' ? 'destructive' :
+                              task.priority === 'MEDIA' ? 'secondary' : 'outline'
                             }
                           >
                             {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}

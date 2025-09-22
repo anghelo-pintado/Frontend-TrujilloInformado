@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { Task } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { taskService } from '@/services/taskService';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CompleteTaskDialogProps {
   task: Task | null;
@@ -30,19 +32,33 @@ const CompleteTaskDialog: React.FC<CompleteTaskDialogProps> = ({
   onCompleted 
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [notes, setNotes] = useState('');
   const [evidencePhotos, setEvidencePhotos] = useState<string[]>([]);
 
-  const handleAddPhoto = () => {
-    // Simular captura de foto
-    const mockPhotoUrl = `/api/placeholder/400/300?text=Evidencia+${Date.now()}`;
-    setEvidencePhotos(prev => [...prev, mockPhotoUrl]);
-    
-    toast({
-      title: "Foto agregada",
-      description: "Evidencia fotográfica agregada exitosamente.",
-    });
+  const handleAddPhoto = async (e?: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+
+    try {
+      const result = await taskService.uploadImage(file);
+      const photoUrl = result.url || result.secure_url || result;
+      setEvidencePhotos(prev => [...prev, photoUrl]);
+
+      toast({
+        title: "Foto agregada",
+        description: "Evidencia fotográfica agregada exitosamente.",
+      });
+      
+    }
+    catch {
+      toast({
+        title: "Error",
+        description: "No se pudo subir la evidencia fotográfica.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleRemovePhoto = (index: number) => {
@@ -51,7 +67,16 @@ const CompleteTaskDialog: React.FC<CompleteTaskDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (!task || !user) {
+      toast({
+        title: "Error",
+        description: "No se puede completar la tarea en este momento.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (evidencePhotos.length === 0) {
       toast({
         title: "Error",
@@ -62,37 +87,66 @@ const CompleteTaskDialog: React.FC<CompleteTaskDialogProps> = ({
     }
 
     setIsLoading(true);
+
+    try {
+      // Actualizar tarea como completada
+      const taskUpdate = {
+        ...task,
+        status: 'RESUELTO' as const,
+        completedAt: new Date().toISOString(),
+        notes: notes || null,
+      };
+
+      await taskService.updateTask(task.id, taskUpdate);
+      
+      // Guardar fotos
+      //const evidencePromises = evidencePhotos.map(photoUrl => 
+        //  taskService.createEvidence({
+          //taskId: task.id,
+         // uploadedBy: user.id,
+         // url: photoUrl
+      //  })
+     // );
+      //await Promise.all(evidencePromises);
+
+      toast({
+        title: "Tarea completada exitosamente",
+        description: "La tarea ha sido marcada como completada. El supervisor y el ciudadano serán notificados.",
+      });
     
-    // Simular completar tarea
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast({
-      title: "Tarea completada exitosamente",
-      description: "La tarea ha sido marcada como completada. El supervisor y el ciudadano serán notificados.",
-    });
-    
-    // Limpiar formulario
-    setNotes('');
-    setEvidencePhotos([]);
-    setIsLoading(false);
-    
-    onCompleted();
+      // Limpiar formulario
+      setNotes('');
+      setEvidencePhotos([]);
+      setIsLoading(false);
+      
+      onCompleted();
+    }
+    catch (error) {
+      console.error('Error completing task:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo completar la tarea. Intenta nuevamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getTypeLabel = (type: Task['type']) => {
     switch (type) {
-      case 'residuos_solidos': return 'Residuos Sólidos';
-      case 'maleza': return 'Maleza';
-      case 'barrido': return 'Barrido';
+      case 'RESIDUOS_SOLIDOS': return 'Residuos Sólidos';
+      case 'MALEZA': return 'Maleza';
+      case 'BARRIDO': return 'Barrido';
       default: return type;
     }
   };
 
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
-      case 'alta': return 'destructive';
-      case 'media': return 'secondary';
-      case 'baja': return 'outline';
+      case 'ALTA': return 'destructive';
+      case 'MEDIA': return 'secondary';
+      case 'BAJA': return 'outline';
       default: return 'outline';
     }
   };
@@ -140,9 +194,17 @@ const CompleteTaskDialog: React.FC<CompleteTaskDialogProps> = ({
           <div className="space-y-3">
             <Label>Evidencia Fotográfica * (Mínimo 1 foto)</Label>
             <div className="space-y-3">
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                style={{ display: 'none' }}
+                id="evidence-photo-input"
+                onChange={handleAddPhoto}
+              />
               <Button
                 type="button"
-                onClick={handleAddPhoto}
+                onClick={() => document.getElementById('evidence-photo-input')?.click()}
                 variant="outline"
                 className="w-full"
               >

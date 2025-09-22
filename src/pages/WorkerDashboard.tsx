@@ -28,11 +28,10 @@ const WorkerDashboard = () => {
   // Estado para tareas del trabajador actual
   const [workerTasks, setWorkerTasks] = useState<Task[]>([]);
 
-  React.useEffect(() => {
-    const fetchTasks = async () => {
+  const fetchTasks = async () => {
       try {
         const allTasks = await taskService.getTasks();
-        setWorkerTasks(allTasks.filter((task: Task) => task.workerId === user?.id));
+        setWorkerTasks(allTasks.filter((task: Task) => String(task.workerId) === String(user?.id)));
       } catch (error) {
         toast({
           title: 'Error al cargar tareas',
@@ -41,13 +40,15 @@ const WorkerDashboard = () => {
         });
       }
     };
+  
+  React.useEffect(() => {
     if (user?.id) fetchTasks();
   }, [user?.id]);
   
   const statusCounts = {
-    pendiente: workerTasks.filter(t => t.status === 'pendiente').length,
-    en_proceso: workerTasks.filter(t => t.status === 'en_proceso').length,
-    completada: workerTasks.filter(t => t.status === 'completada').length
+    pendiente: workerTasks.filter(t => t.status === 'PENDIENTE').length,
+    en_proceso: workerTasks.filter(t => t.status === 'EN_PROGRESO').length,
+    completada: workerTasks.filter(t => t.status === 'RESUELTO').length
   };
 
   const handleStartTask = (taskId: string) => {
@@ -67,6 +68,7 @@ const WorkerDashboard = () => {
       description: "La tarea ha sido marcada como completada exitosamente.",
     });
     setSelectedTask(null);
+    fetchTasks();
   };
 
   return (
@@ -165,7 +167,7 @@ const WorkerDashboard = () => {
                   <div key={task.id} className="relative">
                     <TaskCard task={task} />
                     <div className="absolute top-4 right-4 flex space-x-2">
-                      {task.status === 'pendiente' && (
+                      {task.status === 'PENDIENTE' && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -175,7 +177,7 @@ const WorkerDashboard = () => {
                           Iniciar
                         </Button>
                       )}
-                      {task.status === 'en_proceso' && (
+                      {task.status === 'EN_PROGRESO' && (
                         <Button
                           size="sm"
                           onClick={() => handleCompleteTask(task)}
@@ -192,7 +194,7 @@ const WorkerDashboard = () => {
             )}
           </TabsContent>
 
-          {(['pendiente', 'en_proceso', 'completada'] as const).map((status) => (
+          {(['PENDIENTE', 'EN_PROGRESO', 'RESUELTO'] as const).map((status) => (
             <TabsContent key={status} value={status} className="space-y-4">
               <div className="grid gap-4">
                 {workerTasks
@@ -201,7 +203,7 @@ const WorkerDashboard = () => {
                     <div key={task.id} className="relative">
                       <TaskCard task={task} />
                       <div className="absolute top-4 right-4 flex space-x-2">
-                        {status === 'pendiente' && (
+                        {status === 'PENDIENTE' && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -211,7 +213,7 @@ const WorkerDashboard = () => {
                             Iniciar
                           </Button>
                         )}
-                        {status === 'en_proceso' && (
+                        {status === 'EN_PROGRESO' && (
                           <Button
                             size="sm"
                             onClick={() => handleCompleteTask(task)}
@@ -228,12 +230,12 @@ const WorkerDashboard = () => {
               {workerTasks.filter(task => task.status === status).length === 0 && (
                 <Card>
                   <CardContent className="p-8 text-center">
-                    {status === 'pendiente' ? <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" /> :
-                     status === 'en_proceso' ? <Play className="h-12 w-12 text-muted-foreground mx-auto mb-4" /> :
+                    {status === 'PENDIENTE' ? <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" /> :
+                     status === 'EN_PROGRESO' ? <Play className="h-12 w-12 text-muted-foreground mx-auto mb-4" /> :
                      <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
                     <h3 className="text-lg font-semibold mb-2 mt-4">
-                      No hay tareas {status === 'en_proceso' ? 'en proceso' : 
-                                   status === 'completada' ? 'completadas' : 'pendientes'}
+                      No hay tareas {status === 'EN_PROGRESO' ? 'en proceso' : 
+                                   status === 'RESUELTO' ? 'completadas' : 'pendientes'}
                     </h3>
                     <p className="text-muted-foreground">
                       No tienes tareas con este estado actualmente.

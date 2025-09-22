@@ -40,6 +40,7 @@ export const reportService = {
   },
 
   updateReport: async (id: string, reportData: Partial<Report>) => {
+    console.log(`Update report ${id} request:`, reportData);
     const response = await apiClient.put(`/reporte/${id}`, reportData);
     console.log('Update report response:', response.data);
     

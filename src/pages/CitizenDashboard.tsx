@@ -40,7 +40,7 @@ const CitizenDashboard = () => {
   const getStatusColor = (status: Report['status']) => {
     switch (status) {
       case 'PENDIENTE': return 'warning';
-      case 'EN_PROCESO': return 'primary';
+      case 'EN_PROGRESO': return 'primary';
       case 'RESUELTO': return 'success';
       default: return 'secondary';
     }
@@ -49,7 +49,7 @@ const CitizenDashboard = () => {
   const getStatusIcon = (status: Report['status']) => {
     switch (status) {
       case 'PENDIENTE': return <Clock className="h-4 w-4" />;
-      case 'EN_PROCESO': return <AlertCircle className="h-4 w-4" />;
+      case 'EN_PROGRESO': return <AlertCircle className="h-4 w-4" />;
       case 'RESUELTO': return <CheckCircle className="h-4 w-4" />;
       default: return <Clock className="h-4 w-4" />;
     }
@@ -75,7 +75,7 @@ const CitizenDashboard = () => {
 
   const statusCounts = {
     pendiente: userReports.filter(r => r.status === 'PENDIENTE').length,
-    en_proceso: userReports.filter(r => r.status === 'EN_PROCESO').length,
+    en_proceso: userReports.filter(r => r.status === 'EN_PROGRESO').length,
     resuelto: userReports.filter(r => r.status === 'RESUELTO').length
   };
 
@@ -217,7 +217,7 @@ const CitizenDashboard = () => {
             )}
           </TabsContent>
 
-          {(['PENDIENTE', 'EN_PROCESO', 'RESUELTO'] as const).map((status) => (
+          {(['PENDIENTE', 'EN_PROGRESO', 'RESUELTO'] as const).map((status) => (
             <TabsContent key={status} value={status} className="space-y-4">
               <div className="grid gap-4">
                 {userReports

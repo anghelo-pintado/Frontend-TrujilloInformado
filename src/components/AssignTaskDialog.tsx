@@ -15,6 +15,9 @@ import {
 } from 'lucide-react';
 import { Report } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { taskService } from '@/services/taskService';
+import { reportService } from '@/services/reportService';
 
 interface AssignTaskDialogProps {
   report: Report | null;
@@ -58,14 +61,24 @@ const AssignTaskDialog: React.FC<AssignTaskDialogProps> = ({
   onAssigned 
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState('');
-  const [priority, setPriority] = useState<'baja' | 'media' | 'alta'>('media');
+  const [priority, setPriority] = useState<'BAJA' | 'MEDIA' | 'ALTA'>('MEDIA');
   const [notes, setNotes] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!report || !user) {
+      toast({
+        title: "Error",
+        description: "No hay un reporte seleccionado.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!selectedWorker) {
       toast({
         title: "Error",
@@ -76,40 +89,76 @@ const AssignTaskDialog: React.FC<AssignTaskDialogProps> = ({
     }
 
     setIsLoading(true);
-    
-    // Simular asignación de tarea
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const worker = availableWorkers.find(w => w.id === selectedWorker);
-    
-    toast({
-      title: "Tarea asignada exitosamente",
-      description: `La tarea ha sido asignada a ${worker?.name}. Se le notificará inmediatamente.`,
-    });
-    
-    // Limpiar formulario
-    setSelectedWorker('');
-    setPriority('media');
-    setNotes('');
-    setIsLoading(false);
-    
-    onAssigned();
+
+    try {
+      const taskData = {
+        reportId: report.id,
+        workerId: selectedWorker,
+        supervisorId: user.id,
+        workerName: availableWorkers.find(w => w.id === selectedWorker)?.name || '',
+        supervisorName: user.name,
+        title: `${getTypeLabel(report.type)} - ${report.location.address}`,
+        description: report.description,
+        notes: notes,
+        type: report.type,
+        location: report.location,
+        status: 'EN_PROGRESO' as const,
+        priority: priority
+      };
+
+      await taskService.createTask(taskData);
+
+      const reportUpdate = {
+        ...report, // copia todos los campos actuales
+        status: 'EN_PROGRESO' as const,
+        assignedTo: selectedWorker,
+        assignedBy: user.id
+      };
+
+      await reportService.updateReport(report.id, reportUpdate);
+
+        const worker = availableWorkers.find(w => w.id === selectedWorker);
+      
+      toast({
+        title: "Tarea asignada exitosamente",
+        description: `La tarea ha sido asignada a ${worker?.name}. Se le notificará inmediatamente.`,
+      });
+      
+      // Limpiar formulario
+      setSelectedWorker('');
+      setPriority('MEDIA');
+      setNotes('');
+      setIsLoading(false);
+      
+      onAssigned();
+    }
+    catch (error) {
+      console.error('Error assigning task:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo asignar la tarea. Intenta nuevamente.",
+        variant: "destructive"
+      });
+    }
+    finally {
+      setIsLoading(false);
+    }
   };
 
   const getTypeLabel = (type: Report['type']) => {
     switch (type) {
-      case 'residuos_solidos': return 'Residuos Sólidos';
-      case 'maleza': return 'Maleza';
-      case 'barrido': return 'Barrido';
+      case 'RESIDUOS_SOLIDOS': return 'Residuos Sólidos';
+      case 'MALEZA': return 'Maleza';
+      case 'BARRIDO': return 'Barrido';
       default: return type;
     }
   };
 
-  const getPriorityColor = (priority: 'baja' | 'media' | 'alta') => {
+  const getPriorityColor = (priority: 'BAJA' | 'MEDIA' | 'ALTA') => {
     switch (priority) {
-      case 'alta': return 'destructive';
-      case 'media': return 'secondary';
-      case 'baja': return 'outline';
+      case 'ALTA': return 'destructive';
+      case 'MEDIA': return 'secondary';
+      case 'BAJA': return 'outline';
       default: return 'outline';
     }
   };
@@ -213,14 +262,14 @@ const AssignTaskDialog: React.FC<AssignTaskDialogProps> = ({
           {/* Prioridad */}
           <div className="space-y-2">
             <Label>Prioridad de la Tarea</Label>
-            <Select value={priority} onValueChange={(value: 'baja' | 'media' | 'alta') => setPriority(value)}>
+            <Select value={priority} onValueChange={(value: 'BAJA' | 'MEDIA' | 'ALTA') => setPriority(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="baja">Baja Prioridad</SelectItem>
-                <SelectItem value="media">Media Prioridad</SelectItem>
-                <SelectItem value="alta">Alta Prioridad</SelectItem>
+                <SelectItem value="BAJA">Baja Prioridad</SelectItem>
+                <SelectItem value="MEDIA">Media Prioridad</SelectItem>
+                <SelectItem value="ALTA">Alta Prioridad</SelectItem>
               </SelectContent>
             </Select>
           </div>
